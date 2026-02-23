@@ -11,6 +11,7 @@ It filters selected repositories and event types from the public GitHub Archive 
 This table is the base dataset for all future metrics and modeling.
 
 Code Structure (What Each File Does)
+```
 src/
 │
 ├── ingestion/
@@ -18,8 +19,12 @@ src/
 │   ├── scoped_events.py
 │   └── ingest.py
 │
+├── transformations/
+│   └── build_gold.py
+│
 ├── utils/
 │   └── setup_creds.py
+```
 
 setup_creds.py
 
@@ -81,6 +86,55 @@ devinsight
 
 Table:
 scoped_events
+
+---
+
+## Gold Layer (Curated Analytics Tables)
+
+This repo also builds curated, analytics-ready tables in:
+
+    devinsight_gold
+
+These tables are derived from:
+
+    devinsight.scoped_events
+
+
+### build_gold.py
+
+From project root:
+
+    python src/transformations/build_gold.py
+
+
+### What It Produces
+
+Project:
+composed-tasks-345810
+
+Dataset:
+devinsight_gold
+
+
+Table:
+gold_developer_daily_rollup
+
+Description:
+Daily developer-level performance metrics including commit counts, pull request activity, review activity, and productivity signals. Used for dashboards and time-series modeling.
+
+
+Table:
+gold_pr_lifecycle
+
+Description:
+Pull request lifecycle metrics such as PR creation time, merge time, review duration, and cycle time. Used to measure delivery efficiency.
+
+
+Table:
+gold_team_weekly_summary
+
+Description:
+Weekly team-level aggregated metrics derived from developer activity. Used for leadership insights and trend analysis.
 
 Important
 
