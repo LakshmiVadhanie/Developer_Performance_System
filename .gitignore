@@ -17,7 +17,12 @@ __pycache__/
 
 scripts/data/
 data/
+src/data/
 
+# Models & generated outputs
+models/
+notebooks/*.png
+notebooks/codebert_commit_analysis.py
 
 *.log
 
