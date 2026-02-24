@@ -1,13 +1,13 @@
 from google.cloud import bigquery
-from utils.setup_creds import get_bq_client
+from utils.setup_creds import get_bigquery_client
 
 
 def build_scoped_events(
-    project_id: str = "composed-tasks-345810",
+    project_id: str = "composed-task-345810",
     dataset_id: str = "devinsight",
     table_id: str = "scoped_events",
 ):
-    client = get_bq_client()
+    client = get_bigquery_client()
 
     query = f"""
     CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.{table_id}` AS
@@ -41,6 +41,7 @@ def build_scoped_events(
     job = client.query(query)
     job.result()
     return f"{project_id}.{dataset_id}.{table_id}"
+
 
 
 
