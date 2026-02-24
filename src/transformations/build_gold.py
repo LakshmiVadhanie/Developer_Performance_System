@@ -1,8 +1,14 @@
+import os
+from dotenv import load_dotenv
 from utils.setup_creds import get_bigquery_client
 
-PROJECT_ID = "composed-task-345810"
-SOURCE_TABLE = f"{PROJECT_ID}.devinsight.scoped_events"
-GOLD_DATASET = f"{PROJECT_ID}.devinsight_gold"
+load_dotenv()
+# PROJECT_ID = "composed-task-345810"
+PROJECT_ID = os.environ["GCP_PROJECT_ID"]
+BQ_DATA = os.environ["BQ_DATASET"]
+GD_DATA = os.environ["GD_DATASET"]
+SOURCE_TABLE = f"{PROJECT_ID}.{BQ_DATA}.scoped_events"
+GOLD_DATASET = f"{PROJECT_ID}.{GD_DATA}"
 
 
 def run_query(query: str):
