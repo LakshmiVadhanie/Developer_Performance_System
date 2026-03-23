@@ -239,6 +239,7 @@ class ProductivityLSTM(nn.Module):
             nn.Linear(hidden_dim, 32),
             nn.ReLU(),
             nn.Linear(32, 1),
+            nn.Sigmoid()
         )
 
     def forward(self, x):

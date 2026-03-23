@@ -1,0 +1,7 @@
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir prometheus_client pandas numpy
+COPY monitoring/metrics_exporter.py ./monitoring/metrics_exporter.py
+EXPOSE 9100
+CMD ["python", "monitoring/metrics_exporter.py"]

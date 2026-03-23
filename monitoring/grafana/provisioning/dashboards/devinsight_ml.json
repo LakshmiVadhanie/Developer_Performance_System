@@ -1,0 +1,90 @@
+{
+  "title": "DevInsight Analytics",
+  "uid": "devinsight_ml_home",
+  "tags": ["ml", "devinsight"],
+  "timezone": "browser",
+  "schemaVersion": 30,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Welcome to DevInsight Monitoring",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 4 },
+      "options": {
+        "content": "<div style=\"text-align: center;\">\n\n# Live Developer Telemetry\n\nThese metrics are streaming directly from the Prometheus ML exporter.\n\n</div>"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "LSTM Predicted Next-Day Commits",
+      "targets": [{"expr": "devinsight_lstm_predicted_commits"}],
+      "gridPos": { "x": 0, "y": 4, "w": 8, "h": 7 },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#1e003b", "value": null },
+              { "color": "#3B0764", "value": 50 },
+              { "color": "#6B21A8", "value": 150 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Burnout Anomalies (Iso-Forest)",
+      "targets": [{"expr": "devinsight_burnout_anomaly_count"}],
+      "gridPos": { "x": 8, "y": 4, "w": 8, "h": 7 },
+      "options": {
+        "colorMode": "background"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#281b4d", "value": null },
+              { "color": "#4338ca", "value": 50 },
+              { "color": "#4f46e5", "value": 100 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Sprint Optimizer Best Arm",
+      "targets": [{"expr": "devinsight_bandit_best_arm"}],
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 7 },
+      "options": {
+        "colorMode": "background"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#172554", "value": null },
+              { "color": "#1e40af", "value": 1 },
+              { "color": "#2563eb", "value": 2 }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

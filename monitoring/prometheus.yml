@@ -1,0 +1,25 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  external_labels:
+    project: devinsight
+
+scrape_configs:
+  # ML metrics exporter
+  - job_name: "devinsight_ml_models"
+    static_configs:
+      - targets: ["metrics_exporter:9100"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # FastAPI backend (add your backend host here)
+  - job_name: "devinsight_api"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]   # adjust if backend runs in docker
+    metrics_path: /metrics
+    scrape_interval: 15s

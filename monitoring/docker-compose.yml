@@ -1,0 +1,84 @@
+# ── DevInsight — Prometheus + Grafana Monitoring Stack ───────────────────
+#
+# Starts:
+#   - Prometheus on :9090  (scrapes /metrics every 15s)
+#   - Grafana on      :3000  (pre-loaded with devinsight dashboard)
+#   - metrics_exporter on :9100 (reads ML artifacts, exposes /metrics)
+#
+# Usage:
+#   docker-compose -f monitoring/docker-compose.yml up -d
+#
+# Then open:
+#   Grafana:    http://localhost:3000  (admin / devinsight)
+#   Prometheus: http://localhost:9090
+
+version: "3.9"
+
+services:
+  # ── Prometheus ───────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: devinsight_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    networks:
+      - devinsight_monitor
+
+  # ── Grafana ───────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: devinsight_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=devinsight
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/devinsight_ml.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - devinsight_monitor
+
+  # ── ML Metrics Exporter ───────────────────────────────────────────────────
+  metrics_exporter:
+    build:
+      context: ..
+      dockerfile: monitoring/Dockerfile.metrics
+    container_name: devinsight_metrics
+    ports:
+      - "9100:9100"
+    environment:
+      - METRICS_PORT=9100
+      - METRICS_REFRESH_SECS=60
+    volumes:
+      - ../data:/app/data:ro
+      - ../models:/app/models:ro
+      - ../notebooks:/app/notebooks:ro
+    restart: unless-stopped
+    networks:
+      - devinsight_monitor
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  devinsight_monitor:
+    driver: bridge

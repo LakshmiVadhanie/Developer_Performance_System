@@ -1,0 +1,350 @@
+/* ── Root ── */
+.home-root {
+  position: fixed;
+  inset: 0;
+  background: url('/home-bg.png') center/contain no-repeat #000;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  color: #e8ecf4;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.6s ease;
+}
+.home-root.home-visible { opacity: 1; }
+
+/* Canvas/Orbs removed since we use Image background */
+
+/* ── Header ── */
+.home-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+}
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #e8ecf4;
+}
+.home-logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #00e5ff, #c3f5ff);
+  color: #07090f;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 900;
+}
+.home-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 30px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  color: rgba(232,236,244,0.7);
+}
+.home-user-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00e5ff;
+  animation: pulse-soft 2s infinite;
+}
+
+/* ── Hero ── */
+.home-hero {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 10vw;
+}
+.home-hero-inner {
+  max-width: 780px;
+  transition: transform 0.1s ease-out;
+}
+.home-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #00e5ff;
+  margin: 0 0 1.5rem;
+  animation: fadeUp 0.7s 0.2s both ease-out;
+}
+.home-headline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1.04;
+  margin: 0 0 1.5rem;
+  animation: fadeUp 0.7s 0.35s both ease-out;
+}
+.home-hl-serif {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: normal;
+  font-weight: 900;
+  color: #e8ecf4;
+}
+.home-hl-serif.italic { font-style: italic; color: #00e5ff; }
+.home-hl-gap  { color: rgba(232,236,244,0.35); font-family: 'Space Grotesk', sans-serif; }
+.home-hl-sans { color: rgba(232,236,244,0.5); font-weight: 300; font-size: 0.75em; }
+.home-hl-outline {
+  -webkit-text-stroke: 1.5px rgba(232,236,244,0.25);
+  color: transparent;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.home-tagline {
+  font-size: 0.82rem;
+  color: rgba(232,236,244,0.35);
+  letter-spacing: 0.05em;
+  margin: 0 0 2.5rem;
+  animation: fadeUp 0.7s 0.5s both ease-out;
+}
+
+/* ── CTAs ── */
+.home-actions {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.7s 0.65s both ease-out;
+}
+.home-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #00e5ff 0%, #0db3cc 100%);
+  color: #07090f;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.home-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.2s;
+}
+.home-cta:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 12px 40px rgba(0,229,255,0.4), 0 0 0 1px rgba(0,229,255,0.3);
+}
+.home-cta:hover::after { background: rgba(255,255,255,0.08); }
+.home-cta-arrow {
+  font-size: 1.15rem;
+  transition: transform 0.2s;
+}
+.home-cta:hover .home-cta-arrow { transform: translateX(4px); }
+
+.home-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: rgba(232,236,244,0.25);
+  letter-spacing: 0.04em;
+}
+.home-scroll-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #00e5ff;
+  animation: pulse-soft 2s infinite;
+}
+
+/* ── Floating Badges ── */
+.home-float-badge {
+  position: absolute;
+  background: rgba(16,19,26,0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 16px;
+  padding: 0.85rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: transform 0.12s ease-out;
+  animation: fadeUp 0.7s ease-out both;
+}
+.home-badge-1 { right: 8vw; top: 22%;  animation-delay: 0.8s; }
+.home-badge-2 { right: 18vw; top: 55%; animation-delay: 1.0s; }
+.home-badge-3 { right: 5vw;  top: 68%; animation-delay: 1.2s; }
+.hb-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #00e5ff;
+  line-height: 1;
+}
+.hb-label {
+  font-size: 0.68rem;
+  color: rgba(232,236,244,0.4);
+  white-space: nowrap;
+}
+
+/* ── Quote Strip ── */
+.home-quote-strip {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: rgba(0,229,255,0.02);
+  padding: 4rem 10vw;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1rem;
+}
+.home-quote-inner {
+  max-width: 760px;
+}
+.home-quote-text {
+  font-family: 'Georgia', serif;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-style: italic;
+  color: rgba(232,236,244,0.75);
+  line-height: 1.7;
+  margin: 0 0 0.75rem;
+  animation: fadeUp 0.5s ease-out both;
+}
+.home-quote-author {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00e5ff;
+  margin: 0;
+}
+.home-quote-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.hqd {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(0,229,255,0.2);
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.hqd-active { background: #00e5ff; width: 20px; border-radius: 3px; }
+
+/* ── Tech Stack ── */
+.home-stack {
+  position: relative;
+  z-index: 10;
+  padding: 5rem 10vw;
+}
+.home-stack-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(232,236,244,0.3);
+  margin: 0 0 2rem;
+}
+.home-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+.home-stack-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: all 0.2s;
+  cursor: default;
+  animation: fadeUp 0.5s ease-out both;
+}
+.home-stack-card:hover {
+  background: rgba(0,229,255,0.04);
+  border-color: rgba(0,229,255,0.2);
+  transform: translateY(-3px);
+}
+.hsc-icon {
+  font-size: 1.4rem;
+  color: #00e5ff;
+  margin-bottom: 0.25rem;
+}
+.hsc-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #e8ecf4;
+}
+.hsc-desc {
+  font-size: 0.7rem;
+  color: rgba(232,236,244,0.35);
+}
+
+/* ── Bottom CTA Bar ── */
+.home-bottom-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 10vw;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(255,255,255,0.04);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.home-bottom-copy {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(232,236,244,0.7);
+}
+.home-bottom-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(0,229,255,0.3);
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #00e5ff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.home-bottom-btn:hover {
+  background: rgba(0,229,255,0.1);
+  border-color: #00e5ff;
+  transform: translateX(4px);
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
