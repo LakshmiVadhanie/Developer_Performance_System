@@ -29,7 +29,7 @@ const pages: Record<string, ReactElement> = {
   'Monitoring Metrics': (
     <div style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
       <div style={{ width: '100%', maxWidth: '1600px', height: '100%', minHeight: '700px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(139, 92, 246, 0.3)', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', background: '#0b0a14' }}>
-        <iframe src="http://localhost:3000/?kiosk" width="100%" height="100%" frameBorder="0" style={{ display: 'block', width: '100%', height: '100%' }} title="Grafana Metrics" />
+        <iframe src="http://localhost:3000/d/devinsight_ml_home?kiosk" width="100%" height="100%" frameBorder="0" style={{ display: 'block', width: '100%', height: '100%' }} title="Grafana Metrics" />
       </div>
     </div>
   ),
