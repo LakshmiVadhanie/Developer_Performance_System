@@ -133,7 +133,6 @@ python src/transformations/build_gold.py
 | 5 | **Isolation Forest** | Unsupervised (anomaly) | Detect burnout/anomaly days per developer | Anomaly rate %, Drop/Spike |
 | 6 | **VAE** | Unsupervised (anomaly) | Team-level weekly health anomaly detection | MSE reconstruction error |
 | 7 | **RL Bandit** | Reinforcement Learning | Optimize sprint configurations via Thompson Sampling | Cumulative regret, posterior mean |
-| 8 | **CodeBERT** | NLP + Clustering | Embed developer activity descriptions, cluster by behavior | Silhouette, productivity score |
 
 ### Run All Models
 
