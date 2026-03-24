@@ -230,7 +230,7 @@ const Chatbot = () => {
             (q.includes('what happened') || q.includes('what did') ? 5 : 0) +
             (q.includes('who committed') || q.includes('who pushed') ? 7 : 0)
           ),
-          response: "Recent git activity: k.morris just pushed feat/lstm-fix (fixed Sigmoid activation, 12m ago), s.chen merged PR #842 (auth middleware, 48m ago), ci/cd flagged a build failure on staging-v4 (null pointer, 2h ago), and l.vadhanie pushed the new dashboard design 3h ago. All contributors are active — no inactive streaks over 24h."
+          response: "Recent git activity: jscheffl just pushed feat/lstm-fix (fixed Sigmoid activation, 12m ago), potiuk merged PR #842 (auth middleware, 48m ago), ci/cd flagged a build failure on staging-v4 (null pointer, 2h ago), and amoghrajesh pushed the new dashboard design 3h ago. All contributors are active — no inactive streaks over 24h."
         },
         {
           // what is LSTM / how does it work

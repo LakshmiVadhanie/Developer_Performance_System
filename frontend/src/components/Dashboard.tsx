@@ -46,16 +46,16 @@ const heatmapOpacities = [
 
 // All git activity (extended list for modal)
 const allGitActivity = [
-  { type: 'commit',  user: 'k.morris',    branch: 'feat/lstm-fix',      msg:'Fix Sigmoid activation in LSTM output',      time:'12m ago',  color:'primary'   },
-  { type: 'merge',   user: 's.chen',      branch: 'main',               msg:'Merged PR #842 — auth middleware',            time:'48m ago',  color:'secondary' },
+  { type: 'commit',  user: 'jscheffl',    branch: 'feat/lstm-fix',      msg:'Fix Sigmoid activation in LSTM output',      time:'12m ago',  color:'primary'   },
+  { type: 'merge',   user: 'potiuk',      branch: 'main',               msg:'Merged PR #842 — auth middleware',            time:'48m ago',  color:'secondary' },
   { type: 'error',   user: 'ci/cd',       branch: 'staging-v4',         msg:'Build failed — null pointer exception',        time:'2h ago',   color:'error'     },
-  { type: 'commit',  user: 'l.vadhanie',  branch:'feat/dashboard-v2',   msg:'Implement Kinetic Terminal design system',     time:'3h ago',   color:'primary'   },
-  { type: 'commit',  user: 'r.patel',     branch: 'fix/auth-leak',      msg:'Patch token validation edge case',             time:'4h ago',   color:'primary'   },
-  { type: 'merge',   user: 'a.nguyen',    branch: 'main',               msg:'Merged PR #839 — performance tweaks',          time:'5h ago',   color:'secondary' },
-  { type: 'commit',  user: 'j.kim',       branch: 'feat/dark-mode',     msg:'Add dark mode toggle and CSS variables',       time:'6h ago',   color:'primary'   },
+  { type: 'commit',  user: 'amoghrajesh',  branch:'feat/dashboard-v2',   msg:'Implement Kinetic Terminal design system',     time:'3h ago',   color:'primary'   },
+  { type: 'commit',  user: 'Lee-W',       branch: 'fix/auth-leak',      msg:'Patch token validation edge case',             time:'4h ago',   color:'primary'   },
+  { type: 'merge',   user: 'cloud-fan',   branch: 'main',               msg:'Merged PR #839 — performance tweaks',          time:'5h ago',   color:'secondary' },
+  { type: 'commit',  user: 'HyukjinKwon', branch: 'feat/dark-mode',     msg:'Add dark mode toggle and CSS variables',       time:'6h ago',   color:'primary'   },
   { type: 'error',   user: 'ci/cd',       branch: 'preview-dark-mode',  msg:'Lint check failed — missing semicolons',       time:'7h ago',   color:'error'     },
-  { type: 'commit',  user: 'm.johnson',   branch: 'refactor/api-layer', msg:'Restructure API layer for better caching',     time:'8h ago',   color:'primary'   },
-  { type: 'merge',   user: 'l.vadhanie',  branch: 'main',               msg:'Merged PR #835 — LSTM model improvements',    time:'1d ago',   color:'secondary' },
+  { type: 'commit',  user: 'jason810496', branch: 'refactor/api-layer', msg:'Restructure API layer for better caching',     time:'8h ago',   color:'primary'   },
+  { type: 'merge',   user: 'zhengruifeng', branch: 'main',              msg:'Merged PR #835 — LSTM model improvements',    time:'1d ago',   color:'secondary' },
 ];
 const gitActivity = allGitActivity.slice(0, 4);
 
@@ -108,12 +108,12 @@ const Dashboard = () => {
     // mock representations of the data artifacts they produced.
     setMlData({
       clusters: [
-        { developer: 'l.vadhanie', archetype: 'Team Lead' },
-        { developer: 'k.morris', archetype: 'Code Committer' },
-        { developer: 'r.patel', archetype: 'Issue Tracker' }
+        { developer: 'potiuk', archetype: 'Team Lead' },
+        { developer: 'jscheffl', archetype: 'Code Committer' },
+        { developer: 'amoghrajesh', archetype: 'Issue Tracker' }
       ],
       alerts: [
-        { developer: 's.chen', type: 'Drop (Sudden Silence)' }
+        { developer: 'gaogaotiantian', type: 'Drop (Sudden Silence)' }
       ],
       bandit: { strategy: 'Review-Heavy (150 reviews)', posterior_mean: 0.842 },
       vae: { week_start: '2026-03-16', recon_error: 14.2 }
