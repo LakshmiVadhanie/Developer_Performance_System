@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import os
 
+from src.api.bigquery_client import get_recent_engagement
+from src.api.ml_service import generate_forecast
+
 app = FastAPI(title="DevInsight API")
 
 # Allow the React frontend to communicate with this backend securely
@@ -64,15 +67,44 @@ def get_ml_insights():
         return {"error": f"Failed to read ML CSVs: {str(e)}"}
 
 @app.get("/api/velocity")
-def get_velocity(time_range: str = "7D"):
-    """
-    Placeholder endpoint.
-    Next step will be:
-    1. Import src.utils.setup_creds to query BigQuery devinsight_gold
-    2. Import models/lstm_productivity.pth to calculate tomorrow's forecast
-    3. Return combined JSON
-    """
-    return {"message": "BigQuery & PyTorch connection coming next!"}
+def get_velocity(developer_id: str = "l.vadhanie", time_range: str = "7D"):
+    try:
+        # 1. Fetch exactly 5 days of historical sequence data from BigQuery
+        historical_df = get_recent_engagement(developer_id, sequence_length=5)
+        
+        if historical_df.empty:
+            return {"error": f"No data found in devinsight_gold for developer {developer_id}"}
+            
+        # 2. Feed the sequence directly into the PyTorch LSTM for live Inference
+        predicted_commits = generate_forecast(historical_df)
+        
+        # 3. Format the historical data precisely for the React Recharts `<AreaChart>`
+        chart_data = []
+        for _, row in historical_df.iterrows():
+            day_str = row['event_date'].strftime('%a') # e.g. "Mon"
+            chart_data.append({
+                "day": day_str,
+                "commits": int(row["commits"]),
+                "prs": int(row["prs_opened"] + row["prs_merged"]),
+                "reviews": int(row["reviews_given"])
+            })
+            
+        # 4. Magically append tomorrow's AI Prediction to the very end of the chart array!
+        chart_data.append({
+            "day": "Tomorrow (LSTM)",
+            "commits": predicted_commits,
+            "prs": 0,       # Our LSTM currently only predicts commits
+            "reviews": 0    # Our LSTM currently only predicts commits
+        })
+        
+        return {
+            "predicted_commits": predicted_commits,
+            "chart_data": chart_data,
+            "message": "Success! BigQuery + PyTorch calculation complete."
+        }
+        
+    except Exception as e:
+        return {"error": f"Velocity API Error: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
