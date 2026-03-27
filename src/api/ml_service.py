@@ -63,15 +63,20 @@ def generate_forecast(df: pd.DataFrame) -> int:
     """
     load_ml_assets()
     
-    if len(df) < _config["sequence_length"]:
-        raise ValueError(f"Need exactly {_config['sequence_length']} days of data to forecast.")
+    seq_len = _config["sequence_length"]
+    if len(df) < seq_len:
+        # Pad with zero rows at the beginning for developers with sparse data
+        pad_rows = seq_len - len(df)
+        pad_df = pd.DataFrame(0, index=range(pad_rows), columns=df.columns)
+        pad_df["event_date"] = pd.NaT
+        df = pd.concat([pad_df, df], ignore_index=True)
         
     # Derive the temporal features that the model expects
     df = df.copy()
     df["event_date"] = pd.to_datetime(df["event_date"])
-    df["day_of_week"] = df["event_date"].dt.dayofweek
+    df["day_of_week"] = df["event_date"].dt.dayofweek.fillna(0).astype(int)
     df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)
-    df["week_number"] = df["event_date"].dt.isocalendar().week.astype(int)
+    df["week_number"] = df["event_date"].dt.isocalendar().week.fillna(1).astype(int)
     
     # Extract just the 9 features in the exact order the LSTM expects
     features = df[_config["features"]].values

@@ -80,13 +80,17 @@ def get_velocity(developer_id: str = "l.vadhanie", time_range: str = "7D"):
         
         # 3. Format the historical data precisely for the React Recharts `<AreaChart>`
         chart_data = []
-        for _, row in historical_df.iterrows():
-            day_str = row['event_date'].strftime('%a') # e.g. "Mon"
+        for i, row in historical_df.iterrows():
+            # Safely handle padded rows which have NaT as the date
+            if pd.isna(row['event_date']):
+                day_str = f"Day {i+1}"
+            else:
+                day_str = pd.to_datetime(row['event_date']).strftime('%a')
             chart_data.append({
                 "day": day_str,
-                "commits": int(row["commits"]),
-                "prs": int(row["prs_opened"] + row["prs_merged"]),
-                "reviews": int(row["reviews_given"])
+                "commits": int(row["commits"]) if pd.notna(row["commits"]) else 0,
+                "prs": int(row["prs_opened"] + row["prs_merged"]) if pd.notna(row["prs_opened"]) else 0,
+                "reviews": int(row["reviews_given"]) if pd.notna(row["reviews_given"]) else 0
             })
             
         # 4. Magically append tomorrow's AI Prediction to the very end of the chart array!
