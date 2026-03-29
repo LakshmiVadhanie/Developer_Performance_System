@@ -66,6 +66,23 @@ def get_ml_insights():
     except Exception as e:
         return {"error": f"Failed to read ML CSVs: {str(e)}"}
 
+@app.get("/api/stats")
+def get_dashboard_stats():
+    """Calculate real team-wide totals from developer_clusters.csv."""
+    try:
+        df = pd.read_csv(os.path.join(NOTEBOOKS_DIR, "developer_clusters.csv"))
+        # We'll normalize these to look like the 7D stats the dashboard expects
+        return {
+            "7D": {
+                "commits": str(int(df["commits"].sum())),
+                "prs": str(int(df["prs_opened"].sum() + df["prs_merged"].sum())),
+                "reviews": str(int(df["reviews_given"].sum())),
+                "devs": str(int(len(df)))
+            }
+        }
+    except Exception as e:
+        return {"error": f"Failed to calculate stats: {str(e)}"}
+
 @app.get("/api/velocity")
 def get_velocity(developer_id: str = "l.vadhanie", time_range: str = "7D"):
     try:

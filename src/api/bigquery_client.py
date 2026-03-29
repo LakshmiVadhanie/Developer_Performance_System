@@ -18,12 +18,15 @@ def get_recent_engagement(developer_id: str, sequence_length: int = 5) -> pd.Dat
     # 1. Reuse your perfect authentication logic!
     client = get_bigquery_client()
     
-    # 2. Query the gold layer directly
-    query = """
+    # 2. Query the gold layer directly using the exact .env variables
+    project_id = os.getenv("GCP_PROJECT_ID")
+    gd_dataset = os.getenv("GD_DATASET", "devinsight_gold")
+    
+    query = f"""
         SELECT 
             event_date, commits, prs_opened, prs_merged, prs_closed, 
             reviews_given, issues_opened, issues_closed, active_hours
-        FROM `composed-tasks-345810.devinsight_gold.gold_developer_daily_metrics`
+        FROM `{project_id}.{gd_dataset}.gold_developer_daily_metrics`
         WHERE developer = @dev_id
         ORDER BY event_date ASC
     """

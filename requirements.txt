@@ -2,3 +2,7 @@ google-cloud-bigquery
 pandas
 pyarrow
 python-dotenv
+fastapi
+uvicorn
+torch
+scikit-learn

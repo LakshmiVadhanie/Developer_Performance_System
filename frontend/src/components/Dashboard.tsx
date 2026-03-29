@@ -5,71 +5,52 @@ import {
 } from 'recharts';
 import './Dashboard.css';
 
-// ── Time-range datasets ────────────────────────────────────
-const velocityDataMap: Record<string, { day: string; commits: number; prs: number; reviews: number }[]> = {
-  '7D': [
-    { day: 'Mon', commits: 42, prs: 8,  reviews: 14 },
-    { day: 'Tue', commits: 67, prs: 12, reviews: 19 },
-    { day: 'Wed', commits: 51, prs: 9,  reviews: 16 },
-    { day: 'Thu', commits: 88, prs: 18, reviews: 27 },
-    { day: 'Fri', commits: 95, prs: 21, reviews: 31 },
-    { day: 'Sat', commits: 22, prs: 3,  reviews: 6  },
-    { day: 'Sun', commits: 30, prs: 5,  reviews: 9  },
-  ],
-  '30D': [
-    { day: 'W1',  commits: 310, prs: 58,  reviews: 104 },
-    { day: 'W2',  commits: 287, prs: 52,  reviews: 98  },
-    { day: 'W3',  commits: 342, prs: 67,  reviews: 118 },
-    { day: 'W4',  commits: 395, prs: 74,  reviews: 141 },
-  ],
-  '90D': [
-    { day: 'Jan', commits: 1120, prs: 210, reviews: 390 },
-    { day: 'Feb', commits: 980,  prs: 185, reviews: 342 },
-    { day: 'Mar', commits: 1334, prs: 251, reviews: 461 },
-  ],
-};
+// ── ML Insights Types ──────────────────────────────────────
+type ClusterData = { developer: string; archetype: string };
+type BurnoutAlert = { developer: string; type: string };
+type BanditRec = { strategy: string; posterior_mean: number };
+type VAEAnomaly = { week_start: string; recon_error: number };
 
-const statMap: Record<string, { commits: string; prs: string; reviews: string; devs: string }> = {
-  '7D':  { commits: '184', prs: '42',  reviews: '95',   devs: '87'  },
-  '30D': { commits: '1334', prs: '251', reviews: '461', devs: '92'  },
-  '90D': { commits: '3434', prs: '646', reviews: '1193',devs: '98'  },
-};
+// ── Velocity data is now served live from FastAPI + PyTorch LSTM ──────
+
+// ── Team-wide statistics (now calculated live from ML data) ──────
+
 
 // Heatmap data (5 weeks × 7 days = 35 cells)
 const heatmapOpacities = [
-  10,30,70,15,50,90,20,
-  45,80,25,10,60,15,10,
-  10,25,75,100,40,20,10,
-  35,10,10,65,20,10,45,
-  80,20,10,10,38,70,10,
+  10, 30, 70, 15, 50, 90, 20,
+  45, 80, 25, 10, 60, 15, 10,
+  10, 25, 75, 100, 40, 20, 10,
+  35, 10, 10, 65, 20, 10, 45,
+  80, 20, 10, 10, 38, 70, 10,
 ];
 
 // All git activity (extended list for modal)
 const allGitActivity = [
-  { type: 'commit',  user: 'jscheffl',    branch: 'feat/lstm-fix',      msg:'Fix Sigmoid activation in LSTM output',      time:'12m ago',  color:'primary'   },
-  { type: 'merge',   user: 'potiuk',      branch: 'main',               msg:'Merged PR #842 — auth middleware',            time:'48m ago',  color:'secondary' },
-  { type: 'error',   user: 'ci/cd',       branch: 'staging-v4',         msg:'Build failed — null pointer exception',        time:'2h ago',   color:'error'     },
-  { type: 'commit',  user: 'amoghrajesh',  branch:'feat/dashboard-v2',   msg:'Implement Kinetic Terminal design system',     time:'3h ago',   color:'primary'   },
-  { type: 'commit',  user: 'Lee-W',       branch: 'fix/auth-leak',      msg:'Patch token validation edge case',             time:'4h ago',   color:'primary'   },
-  { type: 'merge',   user: 'cloud-fan',   branch: 'main',               msg:'Merged PR #839 — performance tweaks',          time:'5h ago',   color:'secondary' },
-  { type: 'commit',  user: 'HyukjinKwon', branch: 'feat/dark-mode',     msg:'Add dark mode toggle and CSS variables',       time:'6h ago',   color:'primary'   },
-  { type: 'error',   user: 'ci/cd',       branch: 'preview-dark-mode',  msg:'Lint check failed — missing semicolons',       time:'7h ago',   color:'error'     },
-  { type: 'commit',  user: 'jason810496', branch: 'refactor/api-layer', msg:'Restructure API layer for better caching',     time:'8h ago',   color:'primary'   },
-  { type: 'merge',   user: 'zhengruifeng', branch: 'main',              msg:'Merged PR #835 — LSTM model improvements',    time:'1d ago',   color:'secondary' },
+  { type: 'commit', user: 'jscheffl', branch: 'feat/lstm-fix', msg: 'Fix Sigmoid activation in LSTM output', time: '12m ago', color: 'primary' },
+  { type: 'merge', user: 'potiuk', branch: 'main', msg: 'Merged PR #842 — auth middleware', time: '48m ago', color: 'secondary' },
+  { type: 'error', user: 'ci/cd', branch: 'staging-v4', msg: 'Build failed — null pointer exception', time: '2h ago', color: 'error' },
+  { type: 'commit', user: 'amoghrajesh', branch: 'feat/dashboard-v2', msg: 'Implement Kinetic Terminal design system', time: '3h ago', color: 'primary' },
+  { type: 'commit', user: 'Lee-W', branch: 'fix/auth-leak', msg: 'Patch token validation edge case', time: '4h ago', color: 'primary' },
+  { type: 'merge', user: 'cloud-fan', branch: 'main', msg: 'Merged PR #839 — performance tweaks', time: '5h ago', color: 'secondary' },
+  { type: 'commit', user: 'HyukjinKwon', branch: 'feat/dark-mode', msg: 'Add dark mode toggle and CSS variables', time: '6h ago', color: 'primary' },
+  { type: 'error', user: 'ci/cd', branch: 'preview-dark-mode', msg: 'Lint check failed — missing semicolons', time: '7h ago', color: 'error' },
+  { type: 'commit', user: 'jason810496', branch: 'refactor/api-layer', msg: 'Restructure API layer for better caching', time: '8h ago', color: 'primary' },
+  { type: 'merge', user: 'zhengruifeng', branch: 'main', msg: 'Merged PR #835 — LSTM model improvements', time: '1d ago', color: 'secondary' },
 ];
 const gitActivity = allGitActivity.slice(0, 4);
 
 const deploymentLog = [
-  { env:'Production', status:'Success', id:'v2.4.1‑rc',    dur:'1m 42s', time:'2 mins ago' },
-  { env:'Staging',    status:'Success', id:'fix/auth‑leak', dur:'58s',    time:'45 mins ago' },
-  { env:'Production', status:'Failed',  id:'v2.4.0‑stable', dur:'12s',    time:'2 hours ago' },
-  { env:'Preview',    status:'Running', id:'feat/dark‑mode', dur:'—',     time:'Just now' },
+  { env: 'Production', status: 'Success', id: 'v2.4.1‑rc', dur: '1m 42s', time: '2 mins ago' },
+  { env: 'Staging', status: 'Success', id: 'fix/auth‑leak', dur: '58s', time: '45 mins ago' },
+  { env: 'Production', status: 'Failed', id: 'v2.4.0‑stable', dur: '12s', time: '2 hours ago' },
+  { env: 'Preview', status: 'Running', id: 'feat/dark‑mode', dur: '—', time: 'Just now' },
 ];
 
 const prCyclePhases = [
-  { label:'Review Phase',  value:6.2,  pct: 45, color:'var(--accent)' },
-  { label:'Testing / QA',  value:4.1,  pct: 30, color:'var(--secondary)' },
-  { label:'Idle / Wait',   value:8.1,  pct: 60, color:'#3b494c' },
+  { label: 'Review Phase', value: 6.2, pct: 45, color: 'var(--accent)' },
+  { label: 'Testing / QA', value: 4.1, pct: 30, color: 'var(--secondary)' },
+  { label: 'Idle / Wait', value: 8.1, pct: 60, color: '#3b494c' },
 ];
 
 // ── Custom Tooltip ──────────────────────────────────────────
@@ -90,11 +71,25 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 // ── Component ───────────────────────────────────────────────
+const FASTAPI_BASE = 'http://localhost:8000';
+const DEFAULT_DEV = 'HyukjinKwon';
+
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState('7D');
-  const [showAllActivity, setShowAllActivity] = useState(false); // Renamed to showAllGit below
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
-  // ML Data State
+  // Live velocity chart data (BigQuery history + LSTM prediction)
+  const [velocityData, setVelocityData] = useState<{ day: string; commits: number; prs: number; reviews: number }[]>([]);
+  const [predictedCommits, setPredictedCommits] = useState<number | null>(null);
+
+  // Team-wide aggregate stats
+  const [statMap, setStatMap] = useState<Record<string, { commits: string; prs: string; reviews: string; devs: string }>>({
+    '7D': { commits: '0', prs: '0', reviews: '0', devs: '0' },
+    '30D': { commits: '0', prs: '0', reviews: '0', devs: '0' },
+    '90D': { commits: '0', prs: '0', reviews: '0', devs: '0' },
+  });
+
+  // ML insights from your CSV outputs
   const [mlData, setMlData] = useState<{
     clusters: ClusterData[],
     alerts: BurnoutAlert[],
@@ -102,34 +97,53 @@ const Dashboard = () => {
     vae: VAEAnomaly | null
   }>({ clusters: [], alerts: [], bandit: null, vae: null });
 
+  // Fetch velocity chart + LSTM prediction (re-runs when time range changes)
   useEffect(() => {
-    // In a real app this would be a fetch to the FastAPI backend.
-    // For demo purposes, we're assuming the ML pipelines run and we simply display 
-    // mock representations of the data artifacts they produced.
-    setMlData({
-      clusters: [
-        { developer: 'potiuk', archetype: 'Team Lead' },
-        { developer: 'jscheffl', archetype: 'Code Committer' },
-        { developer: 'amoghrajesh', archetype: 'Issue Tracker' }
-      ],
-      alerts: [
-        { developer: 'gaogaotiantian', type: 'Drop (Sudden Silence)' }
-      ],
-      bandit: { strategy: 'Review-Heavy (150 reviews)', posterior_mean: 0.842 },
-      vae: { week_start: '2026-03-16', recon_error: 14.2 }
-    });
+    const loadVelocity = async () => {
+      try {
+        const res = await fetch(`${FASTAPI_BASE}/api/velocity?developer_id=${DEFAULT_DEV}&time_range=${timeRange}`);
+        const data = await res.json();
+        if (!data.error) {
+          setVelocityData(data.chart_data);
+          setPredictedCommits(data.predicted_commits);
+        }
+      } catch (e) {
+        console.error('Velocity API error:', e);
+      }
+    };
+    loadVelocity();
+  }, [timeRange]);
+
+  // Fetch ML insights + Team stats (runs once on load)
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // 1. Load ML insights
+        const res = await fetch(`${FASTAPI_BASE}/api/ml-insights`);
+        const data = await res.json();
+        if (!data.error) setMlData(data);
+
+        // 2. Load team-wide stats
+        const statsRes = await fetch(`${FASTAPI_BASE}/api/stats`);
+        const statsData = await statsRes.json();
+        if (!statsData.error) setStatMap(statsData);
+      } catch (e) {
+        console.error('Initial data fetch error:', e);
+      }
+    };
+    loadInitialData();
   }, []);
 
   // Export deployment log as CSV
   const handleExportCSV = () => {
     const rows = [
-      ['Environment','Status','ID','Duration','Timestamp'],
+      ['Environment', 'Status', 'ID', 'Duration', 'Timestamp'],
       ...deploymentLog.map(r => [r.env, r.status, r.id, r.dur, r.time]),
     ];
     const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url; a.download = 'deployment_log.csv';
     a.click();
     URL.revokeObjectURL(url);
@@ -147,7 +161,7 @@ const Dashboard = () => {
         </div>
         <div className="hero-actions">
           <div className="time-filter">
-            {['7D','30D','90D'].map(t => (
+            {['7D', '30D', '90D'].map(t => (
               <button key={t} onClick={() => setTimeRange(t)}
                 className={`tf-btn ${timeRange === t ? 'tf-active' : ''}`}>{t}</button>
             ))}
@@ -162,12 +176,12 @@ const Dashboard = () => {
       {/* ── Stat Cards ── */}
       <div className="stats-row">
         {[
-          { label:'Predicted Commits', value: statMap[timeRange].commits, trend:'+12.5%', trendUp:true,  accent:'var(--accent)',     icon:'commit' },
-          { label:'Active PRs',        value: statMap[timeRange].prs,     trend:'-5.2%',  trendUp:false, accent:'var(--secondary)',  icon:'merge' },
-          { label:'Reviews Given',     value: statMap[timeRange].reviews,  trend:'+18.1%', trendUp:true,  accent:'#2dd4bf',           icon:'rate_review' },
-          { label:'Active Developers', value: statMap[timeRange].devs,    trend:'+2.4%',  trendUp:true,  accent:'var(--primary)',    icon:'group' },
+          { label: 'Predicted Commits', value: predictedCommits !== null ? String(predictedCommits) : statMap[timeRange].commits, trend: '+12.5%', trendUp: true, accent: 'var(--accent)', icon: 'commit' },
+          { label: 'Active PRs', value: statMap[timeRange].prs, trend: '-5.2%', trendUp: false, accent: 'var(--secondary)', icon: 'merge' },
+          { label: 'Reviews Given', value: statMap[timeRange].reviews, trend: '+18.1%', trendUp: true, accent: '#2dd4bf', icon: 'rate_review' },
+          { label: 'Active Developers', value: statMap[timeRange].devs, trend: '+2.4%', trendUp: true, accent: 'var(--primary)', icon: 'group' },
         ].map((s, i) => (
-          <div key={s.label} className={`stat-card fade-up d${i+1}`}>
+          <div key={s.label} className={`stat-card fade-up d${i + 1}`}>
             <div className="stat-top">
               <span className="stat-label">{s.label}</span>
               <div className="stat-icon" style={{ color: s.accent }}>
@@ -193,28 +207,28 @@ const Dashboard = () => {
               <h3 className="card-title">Coding Velocity &amp; LSTM Forecast</h3>
             </div>
             <div className="chart-legend">
-              <span className="legend-dot" style={{ background:'var(--accent)' }} />Commits
-              <span className="legend-dot" style={{ background:'var(--secondary)' }} />Reviews
+              <span className="legend-dot" style={{ background: 'var(--accent)' }} />Commits
+              <span className="legend-dot" style={{ background: 'var(--secondary)' }} />Reviews
             </div>
           </div>
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={velocityDataMap[timeRange]}>
+            <AreaChart data={velocityData}>
               <defs>
                 <linearGradient id="gradCommits" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gradReviews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-              <XAxis dataKey="day" stroke="var(--text-muted)" tick={{fill:'var(--text-muted)', fontSize:11}} />
-              <YAxis stroke="var(--text-muted)" tick={{fill:'var(--text-muted)', fontSize:11}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="day" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
+              <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="commits" name="Commits" stroke="var(--accent)" strokeWidth={2.5} fillOpacity={1} fill="url(#gradCommits)"/>
-              <Area type="monotone" dataKey="reviews" name="Reviews" stroke="var(--secondary)" strokeWidth={2} fillOpacity={1} fill="url(#gradReviews)"/>
+              <Area type="monotone" dataKey="commits" name="Commits" stroke="var(--accent)" strokeWidth={2.5} fillOpacity={1} fill="url(#gradCommits)" />
+              <Area type="monotone" dataKey="reviews" name="Reviews" stroke="var(--secondary)" strokeWidth={2} fillOpacity={1} fill="url(#gradReviews)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -229,14 +243,14 @@ const Dashboard = () => {
           </div>
           <div className="heatmap">
             {heatmapOpacities.map((op, i) => (
-              <div key={i} className="heat-cell" style={{ opacity: op/100 }} title={`Activity: ${op}%`} />
+              <div key={i} className="heat-cell" style={{ opacity: op / 100 }} title={`Activity: ${op}%`} />
             ))}
           </div>
           <div className="heat-legend">
             <span>Less</span>
             <div className="heat-scale">
-              {[10,30,60,90,100].map(o => (
-                <div key={o} className="heat-cell-sm" style={{ opacity: o/100 }} />
+              {[10, 30, 60, 90, 100].map(o => (
+                <div key={o} className="heat-cell-sm" style={{ opacity: o / 100 }} />
               ))}
             </div>
             <span>Peak</span>
@@ -248,11 +262,11 @@ const Dashboard = () => {
       <section className="ml-insights-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
         <div className="dash-card">
           <h3 className="card-title">
-            <span className="material-symbols-outlined" style={{color: 'var(--accent)', verticalAlign: 'middle', marginRight: '8px'}}>psychology</span>
+            <span className="material-symbols-outlined" style={{ color: 'var(--accent)', verticalAlign: 'middle', marginRight: '8px' }}>psychology</span>
             Deep Learning Insights
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginTop: '1rem' }}>
-            
+
             <div style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)', padding: '1rem', borderRadius: '12px' }}>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>K-Means Archetypes</div>
               {mlData.clusters.map((c, i) => (
@@ -271,7 +285,7 @@ const Dashboard = () => {
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{a.type} anomaly detected</span>
                 </div>
               ))}
-              {mlData.alerts.length === 0 && <span style={{color: 'var(--text-muted)', fontSize: '0.85rem'}}>No current burnout risks.</span>}
+              {mlData.alerts.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No current burnout risks.</span>}
             </div>
 
             <div style={{ background: 'rgba(45,212,191,0.04)', border: '1px solid rgba(45,212,191,0.1)', padding: '1rem', borderRadius: '12px' }}>
@@ -315,7 +329,7 @@ const Dashboard = () => {
                   <span className="phase-val">{p.value} hrs</span>
                 </div>
                 <div className="phase-track">
-                  <div className="phase-fill" style={{ width:`${p.pct}%`, background: p.color }} />
+                  <div className="phase-fill" style={{ width: `${p.pct}%`, background: p.color }} />
                 </div>
               </div>
             ))}
@@ -330,12 +344,12 @@ const Dashboard = () => {
           <div className="flow-inner">
             <div className="donut-wrap">
               <svg viewBox="0 0 128 128" className="donut-svg">
-                <circle cx="64" cy="64" r="56" fill="none" stroke="var(--surface-high)" strokeWidth="12"/>
+                <circle cx="64" cy="64" r="56" fill="none" stroke="var(--surface-high)" strokeWidth="12" />
                 <circle cx="64" cy="64" r="56" fill="none"
                   stroke="var(--accent)" strokeWidth="12"
                   strokeDasharray="351.8" strokeDashoffset="98"
                   strokeLinecap="round"
-                  style={{ transform:'rotate(-90deg)', transformOrigin:'50% 50%' }}
+                  style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
                 />
               </svg>
               <div className="donut-label">
@@ -345,21 +359,21 @@ const Dashboard = () => {
             </div>
             <div className="flow-stats">
               <div className="flow-stat">
-                <span className="material-symbols-outlined" style={{color:'var(--accent)'}}>bolt</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--accent)' }}>bolt</span>
                 <div>
                   <p className="fs-label">Deep Work</p>
                   <p className="fs-val">4.2 hrs daily avg</p>
                 </div>
               </div>
               <div className="flow-stat">
-                <span className="material-symbols-outlined" style={{color:'var(--secondary)'}}>block</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--secondary)' }}>block</span>
                 <div>
                   <p className="fs-label">Context Switches</p>
                   <p className="fs-val">9 daily interruptions</p>
                 </div>
               </div>
               <div className="flow-stat">
-                <span className="material-symbols-outlined" style={{color:'#2dd4bf'}}>trending_up</span>
+                <span className="material-symbols-outlined" style={{ color: '#2dd4bf' }}>trending_up</span>
                 <div>
                   <p className="fs-label">Model R² Score</p>
                   <p className="fs-val">0.58 — LSTM v4</p>
@@ -379,15 +393,15 @@ const Dashboard = () => {
             <span className="velocity-delta">+24%</span>
           </div>
           <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={velocityDataMap[timeRange]} barSize={16}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-              <XAxis dataKey="day" stroke="transparent" tick={{fill:'var(--text-muted)', fontSize:10}}/>
+            <BarChart data={velocityData} barSize={16}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="day" stroke="transparent" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="prs" name="PRs" fill="var(--accent)" fillOpacity={0.7} radius={[3,3,0,0]}/>
+              <Bar dataKey="prs" name="PRs" fill="var(--accent)" fillOpacity={0.7} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-          <p className="card-sub text-center" style={{marginTop:'0.5rem'}}>Efficiency vs last week</p>
+          <p className="card-sub text-center" style={{ marginTop: '0.5rem' }}>Efficiency vs last week</p>
         </div>
       </div>
 
@@ -434,7 +448,7 @@ const Dashboard = () => {
           <table className="deploy-table">
             <thead>
               <tr>
-                {['Environment','Status','ID','Duration','Timestamp'].map(h => (
+                {['Environment', 'Status', 'ID', 'Duration', 'Timestamp'].map(h => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -446,9 +460,9 @@ const Dashboard = () => {
                   <td><span className={`tag ${row.status === 'Success' ? 'success' : row.status === 'Failed' ? 'error' : 'running'}`}>
                     {row.status}
                   </span></td>
-                  <td><span className="mono" style={{color:'var(--text-muted)'}}>{row.id}</span></td>
+                  <td><span className="mono" style={{ color: 'var(--text-muted)' }}>{row.id}</span></td>
                   <td>{row.dur}</td>
-                  <td style={{color:'var(--text-muted)'}}>{row.time}</td>
+                  <td style={{ color: 'var(--text-muted)' }}>{row.time}</td>
                 </tr>
               ))}
             </tbody>
@@ -504,11 +518,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-// ── ML Insights Types ──
-type ClusterData = { developer: string, archetype: string };
-type BurnoutAlert = { developer: string, type: string };
-type BanditRec = { strategy: string, posterior_mean: number };
-type VAEAnomaly = { week_start: string, recon_error: number };
 
 export default Dashboard;
