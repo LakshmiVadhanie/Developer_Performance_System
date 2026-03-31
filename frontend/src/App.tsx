@@ -1,17 +1,20 @@
 import { useState, useRef, useEffect, type ReactElement } from 'react';
 import './App.css';
 
-import Login    from './components/Login';
-import Home     from './components/Home';
-import Dashboard from './components/Dashboard';
-import Chatbot  from './components/Chatbot';
+import Login        from './components/Login';
+import Home         from './components/Home';
+import Dashboard   from './components/Dashboard';
+import Chatbot, { type ChatPage } from './components/Chatbot';
+import TeamAnalysis from './components/TeamAnalysis';
+import MLInsights   from './components/MLInsights';
 
 type Page = 'login' | 'home' | 'dashboard';
 
 // ── Nav items for dashboard sidebar ─────────────────────────
 const navItems = [
-  { icon: 'dashboard',   label: 'Dashboard'  },
-  { icon: 'monitoring',  label: 'Monitoring Metrics' },
+  { icon: 'dashboard',   label: 'Dashboard'    },
+  { icon: 'groups',      label: 'Team Analysis' },
+  { icon: 'insights',   label: 'ML Insights'  },
 ];
 
 const notifications = [
@@ -26,13 +29,8 @@ const notifications = [
 
 const pages: Record<string, ReactElement> = {
   Dashboard: <></>,
-  'Monitoring Metrics': (
-    <div style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
-      <div style={{ width: '100%', maxWidth: '1600px', height: '100%', minHeight: '700px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(139, 92, 246, 0.3)', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', background: '#0b0a14' }}>
-        <iframe src="http://localhost:3000/d/devinsight_ml_home?kiosk" width="100%" height="100%" frameBorder="0" style={{ display: 'block', width: '100%', height: '100%' }} title="Grafana Metrics" />
-      </div>
-    </div>
-  ),
+  'Team Analysis': <TeamAnalysis />,
+  'ML Insights': <MLInsights />,
 };
 
 const searchIndex = [
@@ -126,7 +124,11 @@ function App() {
   }
 
   // ── Pages: Dashboard ───────────────────────────────────────
-  const isDashboard = activePage === 'Dashboard';
+  // Map active sidebar label → chatbot context
+  const chatPage: ChatPage =
+    activePage === 'Team Analysis' ? 'team'
+    : activePage === 'ML Insights' ? 'ml'
+    : 'dashboard';
 
   return (
     <div className="app-root">
@@ -236,20 +238,16 @@ function App() {
       {/* ── Main canvas ── */}
       <div className="main-canvas" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <main style={{ flex: 1, overflowY: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-          {isDashboard ? (
-            <div style={{ display: 'flex', gap: '2rem', height: '100%', padding: '2rem' }}>
-              <div className="dashboard-section" style={{ flex: 1.5, overflowY: 'auto', paddingRight: '1rem' }}>
-                <Dashboard />
-              </div>
-              <div className="chatbot-section" style={{ flex: 1, height: '100%', minWidth: '400px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(139, 92, 246, 0.2)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
-                <Chatbot />
-              </div>
+          <div style={{ display: 'flex', gap: '2rem', height: '100%', padding: '2rem' }}>
+            {/* Page content */}
+            <div className="dashboard-section" style={{ flex: 1.5, overflowY: 'auto', paddingRight: '1rem' }}>
+              {activePage === 'Dashboard' ? <Dashboard /> : pages[activePage]}
             </div>
-          ) : (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
-              {pages[activePage]}
+            {/* Chatbot — visible on all pages, context-aware */}
+            <div className="chatbot-section" style={{ flex: 1, height: '100%', minWidth: '340px', maxWidth: '420px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(139, 92, 246, 0.2)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}>
+              <Chatbot page={chatPage} />
             </div>
-          )}
+          </div>
         </main>
       </div>
     </div>

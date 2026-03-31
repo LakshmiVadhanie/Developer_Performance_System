@@ -104,9 +104,100 @@ const FALLBACK_ML = {
   vae: { week_start: '2025-03-24', recon_error: 4.21 },
 };
 
+// ── Per-archetype stat profiles (used when team filter is active) ───
+const TEAM_PROFILES: Record<string, {
+  label: string; color: string;
+  stats: Record<string, { commits: string; prs: string; reviews: string; devs: string }>;
+  velocity: { day: string; commits: number; prs: number; reviews: number }[];
+  predictedCommits: number; predictedPRs: number; predictedReviews: number;
+}> = {
+  'All': {
+    label: 'All Developers', color: '#00e5ff',
+    stats: FALLBACK_STATS,
+    velocity: FALLBACK_VELOCITY,
+    predictedCommits: 184, predictedPRs: 64, predictedReviews: 101,
+  },
+  'Team Lead': {
+    label: 'Team Lead', color: '#00e5ff',
+    stats: { '7D': { commits: '58', prs: '20', reviews: '36', devs: '4' }, '30D': { commits: '238', prs: '84', reviews: '152', devs: '4' }, '90D': { commits: '714', prs: '252', reviews: '456', devs: '4' } },
+    velocity: [
+      { day: 'Mon', commits: 10, prs: 3, reviews: 6 },
+      { day: 'Tue', commits: 14, prs: 5, reviews: 8 },
+      { day: 'Wed', commits: 9,  prs: 3, reviews: 5 },
+      { day: 'Thu', commits: 12, prs: 4, reviews: 9 },
+      { day: 'Fri', commits: 13, prs: 5, reviews: 8 },
+      { day: 'Tomorrow (LSTM)', commits: 15, prs: 5, reviews: 9 },
+    ],
+    predictedCommits: 15, predictedPRs: 5, predictedReviews: 9,
+  },
+  'Code Committer': {
+    label: 'Code Committer', color: '#a78bfa',
+    stats: { '7D': { commits: '35', prs: '11', reviews: '14', devs: '6' }, '30D': { commits: '144', prs: '46', reviews: '57', devs: '6' }, '90D': { commits: '432', prs: '138', reviews: '171', devs: '6' } },
+    velocity: [
+      { day: 'Mon', commits: 6, prs: 2, reviews: 2 },
+      { day: 'Tue', commits: 8, prs: 2, reviews: 3 },
+      { day: 'Wed', commits: 5, prs: 2, reviews: 2 },
+      { day: 'Thu', commits: 7, prs: 3, reviews: 3 },
+      { day: 'Fri', commits: 9, prs: 2, reviews: 4 },
+      { day: 'Tomorrow (LSTM)', commits: 10, prs: 3, reviews: 4 },
+    ],
+    predictedCommits: 10, predictedPRs: 3, predictedReviews: 4,
+  },
+  'PR Reviewer': {
+    label: 'PR Reviewer', color: '#2dd4bf',
+    stats: { '7D': { commits: '16', prs: '10', reviews: '42', devs: '4' }, '30D': { commits: '66', prs: '40', reviews: '168', devs: '4' }, '90D': { commits: '198', prs: '120', reviews: '504', devs: '4' } },
+    velocity: [
+      { day: 'Mon', commits: 2, prs: 1, reviews: 7 },
+      { day: 'Tue', commits: 3, prs: 2, reviews: 8 },
+      { day: 'Wed', commits: 2, prs: 1, reviews: 6 },
+      { day: 'Thu', commits: 3, prs: 2, reviews: 9 },
+      { day: 'Fri', commits: 4, prs: 2, reviews: 8 },
+      { day: 'Tomorrow (LSTM)', commits: 4, prs: 2, reviews: 9 },
+    ],
+    predictedCommits: 4, predictedPRs: 2, predictedReviews: 9,
+  },
+  'Issue Tracker': {
+    label: 'Issue Tracker', color: '#fbbf24',
+    stats: { '7D': { commits: '8', prs: '6', reviews: '10', devs: '3' }, '30D': { commits: '33', prs: '24', reviews: '41', devs: '3' }, '90D': { commits: '99', prs: '72', reviews: '123', devs: '3' } },
+    velocity: [
+      { day: 'Mon', commits: 1, prs: 1, reviews: 2 },
+      { day: 'Tue', commits: 2, prs: 1, reviews: 2 },
+      { day: 'Wed', commits: 1, prs: 1, reviews: 1 },
+      { day: 'Thu', commits: 2, prs: 1, reviews: 2 },
+      { day: 'Fri', commits: 2, prs: 2, reviews: 3 },
+      { day: 'Tomorrow (LSTM)', commits: 2, prs: 2, reviews: 3 },
+    ],
+    predictedCommits: 2, predictedPRs: 2, predictedReviews: 3,
+  },
+  'Silent Stalker': {
+    label: 'Silent Stalker', color: '#f97316',
+    stats: { '7D': { commits: '2', prs: '4', reviews: '3', devs: '5' }, '30D': { commits: '8', prs: '14', reviews: '10', devs: '5' }, '90D': { commits: '24', prs: '42', reviews: '31', devs: '5' } },
+    velocity: [
+      { day: 'Mon', commits: 0, prs: 1, reviews: 0 },
+      { day: 'Tue', commits: 1, prs: 1, reviews: 1 },
+      { day: 'Wed', commits: 0, prs: 0, reviews: 0 },
+      { day: 'Thu', commits: 0, prs: 1, reviews: 1 },
+      { day: 'Fri', commits: 1, prs: 1, reviews: 0 },
+      { day: 'Tomorrow (LSTM)', commits: 1, prs: 1, reviews: 1 },
+    ],
+    predictedCommits: 1, predictedPRs: 1, predictedReviews: 1,
+  },
+};
+
+const ARCHETYPE_ORDER = ['All', 'Team Lead', 'Code Committer', 'PR Reviewer', 'Issue Tracker', 'Silent Stalker'] as const;
+
+// helper for rgba in Dashboard
+function hexToRgbD(hex: string) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState('7D');
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<string>('All');
 
   // Live velocity chart data (BigQuery history + LSTM prediction)
   const [velocityData, setVelocityData] = useState<{ day: string; commits: number; prs: number; reviews: number }[]>([]);
@@ -129,8 +220,17 @@ const Dashboard = () => {
     vae: VAEAnomaly | null
   }>({ clusters: [], alerts: [], bandit: null, vae: null });
 
-  // Fetch velocity chart + LSTM prediction (re-runs when time range changes)
+  // Fetch velocity chart + LSTM prediction (re-runs when time range or team changes)
   useEffect(() => {
+    // If a specific team is selected, use the pre-configured profile (no API needed)
+    if (selectedTeam !== 'All') {
+      const profile = TEAM_PROFILES[selectedTeam];
+      setVelocityData(profile.velocity);
+      setPredictedCommits(profile.predictedCommits);
+      setPredictedPRs(profile.predictedPRs);
+      setPredictedReviews(profile.predictedReviews);
+      return;
+    }
     const loadVelocity = async () => {
       try {
         const res = await fetch(`${FASTAPI_BASE}/api/velocity?developer_id=${DEFAULT_DEV}&time_range=${timeRange}`);
@@ -138,27 +238,20 @@ const Dashboard = () => {
         if (!data.error) {
           setVelocityData(data.chart_data);
           setPredictedCommits(data.predicted_commits);
-          // Use new multi-output LSTM predictions if available
           if (data.predicted_prs !== undefined) setPredictedPRs(data.predicted_prs);
           if (data.predicted_reviews !== undefined) setPredictedReviews(data.predicted_reviews);
         } else {
-          // Backend returned an error — use fallback data
           setVelocityData(FALLBACK_VELOCITY);
-          setPredictedCommits(184);
-          setPredictedPRs(64);
-          setPredictedReviews(101);
+          setPredictedCommits(184); setPredictedPRs(64); setPredictedReviews(101);
         }
       } catch (e) {
-        // Network error (backend unreachable on Netlify) — use fallback data
         console.warn('Velocity API unreachable, using fallback data:', e);
         setVelocityData(FALLBACK_VELOCITY);
-        setPredictedCommits(184);
-        setPredictedPRs(64);
-        setPredictedReviews(101);
+        setPredictedCommits(184); setPredictedPRs(64); setPredictedReviews(101);
       }
     };
     loadVelocity();
-  }, [timeRange]);
+  }, [timeRange, selectedTeam]);
 
   // Fetch ML insights + Team stats (runs once on load)
   useEffect(() => {
@@ -200,6 +293,11 @@ const Dashboard = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Active team profile for stat cards
+  const activeProfile = TEAM_PROFILES[selectedTeam];
+  const activeStats = selectedTeam !== 'All' ? activeProfile.stats : statMap;
+  const accentColor = activeProfile.color;
+
   return (
     <div className="dash">
 
@@ -211,15 +309,40 @@ const Dashboard = () => {
           <p className="hero-desc">Deep-dive telemetry into engineering performance and development velocity.</p>
         </div>
         <div className="hero-actions">
-          <div className="time-filter">
-            {['7D', '30D', '90D'].map(t => (
-              <button key={t} onClick={() => setTimeRange(t)}
-                className={`tf-btn ${timeRange === t ? 'tf-active' : ''}`}>{t}</button>
-            ))}
+          {/* Team / Archetype selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Filter by Team:</span>
+            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+              {ARCHETYPE_ORDER.map(arch => (
+                <button
+                  key={arch}
+                  onClick={() => setSelectedTeam(arch)}
+                  style={{
+                    padding: '0.3rem 0.7rem',
+                    fontSize: '0.78rem',
+                    fontWeight: selectedTeam === arch ? 700 : 400,
+                    background: selectedTeam === arch ? `rgba(${hexToRgbD(TEAM_PROFILES[arch].color)}, 0.15)` : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${selectedTeam === arch ? TEAM_PROFILES[arch].color : 'rgba(255,255,255,0.08)'}`,
+                    borderRadius: '6px', cursor: 'pointer',
+                    color: selectedTeam === arch ? TEAM_PROFILES[arch].color : 'var(--text-muted)',
+                    transition: 'all 0.2s',
+                  }}
+                >{arch === 'All' ? '⊕ All' : arch}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="status-pill">
-            <span className="pulse-dot" />
-            <span>All Systems Nominal</span>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '0.5rem' }}>
+            <div className="time-filter">
+              {['7D', '30D', '90D'].map(t => (
+                <button key={t} onClick={() => setTimeRange(t)}
+                  className={`tf-btn ${timeRange === t ? 'tf-active' : ''}`}>{t}</button>
+              ))}
+            </div>
+            <div className="status-pill">
+              <span className="pulse-dot" />
+              <span style={{ color: accentColor }}>Viewing: {activeProfile.label}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -227,10 +350,10 @@ const Dashboard = () => {
       {/* ── Stat Cards ── */}
       <div className="stats-row">
         {[
-            { label: 'Predicted Commits', value: predictedCommits !== null ? String(predictedCommits) : statMap[timeRange].commits, trend: '+12.5%', trendUp: true, accent: 'var(--accent)', icon: 'commit' },
-          { label: 'Active PRs', value: predictedPRs !== null ? String(predictedPRs) : statMap[timeRange].prs, trend: '-5.2%', trendUp: false, accent: 'var(--secondary)', icon: 'merge' },
-          { label: 'Reviews Given', value: predictedReviews !== null ? String(predictedReviews) : statMap[timeRange].reviews, trend: '+18.1%', trendUp: true, accent: '#2dd4bf', icon: 'rate_review' },
-          { label: 'Active Developers', value: statMap[timeRange].devs, trend: '+2.4%', trendUp: true, accent: 'var(--primary)', icon: 'group' },
+          { label: 'Predicted Commits',   value: predictedCommits !== null ? String(predictedCommits) : activeStats[timeRange]?.commits ?? '—', trend: '+12.5%', trendUp: true,  accent: accentColor,        icon: 'commit'      },
+          { label: 'Active PRs',          value: predictedPRs    !== null ? String(predictedPRs)    : activeStats[timeRange]?.prs     ?? '—', trend: '-5.2%',  trendUp: false, accent: 'var(--secondary)', icon: 'merge'       },
+          { label: 'Reviews Given',       value: predictedReviews !== null ? String(predictedReviews) : activeStats[timeRange]?.reviews  ?? '—', trend: '+18.1%', trendUp: true,  accent: '#2dd4bf',          icon: 'rate_review' },
+          { label: 'Active Developers',   value: activeStats[timeRange]?.devs ?? '—',                                                     trend: '+2.4%',  trendUp: true,  accent: 'var(--primary)',   icon: 'group'       },
         ].map((s, i) => (
           <div key={s.label} className={`stat-card fade-up d${i + 1}`}>
             <div className="stat-top">
