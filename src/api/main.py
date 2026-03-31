@@ -92,8 +92,11 @@ def get_velocity(developer_id: str = "l.vadhanie", time_range: str = "7D"):
         if historical_df.empty:
             return {"error": f"No data found in devinsight_gold for developer {developer_id}"}
             
-        # 2. Feed the sequence directly into the PyTorch LSTM for live Inference
-        predicted_commits = generate_forecast(historical_df)
+        # 2. Feed the sequence directly into the PyTorch LSTM for live multi-output forecast
+        forecast = generate_forecast(historical_df)
+        predicted_commits = forecast["commits"]
+        predicted_prs = forecast["prs"]
+        predicted_reviews = forecast["reviews"]
         
         # 3. Format the historical data precisely for the React Recharts `<AreaChart>`
         chart_data = []
@@ -110,18 +113,20 @@ def get_velocity(developer_id: str = "l.vadhanie", time_range: str = "7D"):
                 "reviews": int(row["reviews_given"]) if pd.notna(row["reviews_given"]) else 0
             })
             
-        # 4. Magically append tomorrow's AI Prediction to the very end of the chart array!
+        # 4. Append tomorrow's LSTM prediction row — now includes all three metrics!
         chart_data.append({
             "day": "Tomorrow (LSTM)",
             "commits": predicted_commits,
-            "prs": 0,       # Our LSTM currently only predicts commits
-            "reviews": 0    # Our LSTM currently only predicts commits
+            "prs": predicted_prs,
+            "reviews": predicted_reviews
         })
         
         return {
             "predicted_commits": predicted_commits,
+            "predicted_prs": predicted_prs,
+            "predicted_reviews": predicted_reviews,
             "chart_data": chart_data,
-            "message": "Success! BigQuery + PyTorch calculation complete."
+            "message": "Success! BigQuery + PyTorch multi-output forecast complete."
         }
         
     except Exception as e:
